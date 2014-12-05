@@ -83,7 +83,8 @@ def snmp(oid, host):
     """Perform an SNMP lookup of an OID on a host, return the result."""
     debug_print("Quering SNMP agent on %s for OID '%s'." % (host, oid))
     var = netsnmp.Varbind(oid)
-    result = netsnmp.snmpget(var, Version=2, DestHost=host, Community="public")
+    result = netsnmp.snmpget(var, Version=2, DestHost=host, Community="public",
+                             Timeout=1000000, Retries=0)
     debug_print("SNMP lookup returned result '%s'." % (result[0]))
     return result[0]
 
@@ -137,6 +138,9 @@ def main():
             exit_boostrapper(1)
         print("Local node is already active. Nothing to do.")
         exit_boostrapper()
+    debug_print("Going to sleep for a while to prevent race conditions.")
+    # Sleep 2 seconds + 1 second for each node in the list
+    time.sleep(2 + len(nodes))
     eligible = True
     local_seqno = get_seqno(local_node)
     local_prio = float("inf")
