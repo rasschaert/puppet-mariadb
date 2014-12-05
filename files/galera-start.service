@@ -1,0 +1,13 @@
+[Unit]
+Description=automatic Galera starter
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+Restart=no
+ExecStart=/usr/local/sbin/galera-start.py
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target

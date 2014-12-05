@@ -1,0 +1,59 @@
+[mysqld]
+
+# In order for Galera to work correctly binlog format should be ROW, which helps Galera do certification of transactions.
+# This allows multi-node writing in Galera and detection of conflicts between transactions based on row ids.
+binlog_format             = ROW
+
+# Locking mode used for generating auto-increment values. 0 is the traditional lock mode, 1 the consecutive, and 2 the interleaved.
+# In order to use Galera, the mode needs to be set to 2.
+innodb_autoinc_lock_mode  = 2
+
+# The InnoDB double write buffer should not be disabled for Galera when using v2.0 and higher.
+# InnoDB pages might get corrupted during a MySQL crash, but will be fixed by the blocks from the double write buffer during auto-recovery.
+innodb_doublewrite        = 1
+
+# The query cache needs to be disabled for MariaDB Galera cluster.
+query_cache_size          = 0
+
+# Disabling symbolic-links is recommended to prevent assorted security risks.
+symbolic-links            = 0
+
+[galera]
+
+# Whether or not wsrep replication is enabled. If set to OFF (ON is default), no changes will be replicated.
+wsrep_on                 = ON
+
+# Location of the wsrep library
+wsrep_provider           = /usr/lib64/galera/libgalera_smm.so
+
+# Number of threads used for applying slave writesets in parallel. Galera parallel replication is only applied to transactions when safe to do so.
+wsrep_slave_threads      = 1
+
+# The cluster address is minimally any single other cluster node’s address that is alive and a member of the cluster.
+# It is best (but not necessary) to provide a complete list of all possible cluster nodes.
+# If an empty gcomm:// is provided, this tells the node to bootstrap it self (i.e., form a new cluster).
+<% if @cluster_members -%>
+wsrep_cluster_address    = gcomm://<%= @cluster_members.sort.join ',' %>
+<% else -%>
+wsrep_cluster_address    = gcomm://
+<% end -%>
+
+# Specifies the node's network address, in the format ip address[:port]. Used in situations where autoguessing is not reliable.
+wsrep_node_address       = <%= @node_address %>
+
+#  The name of the cluster. Nodes cannot connect to clusters with a different name, so needs to be identical on all nodes in the same cluster.
+wsrep_cluster_name       = my_galera_cluster
+
+# Method used for taking the state snapshot transfer (sst). Valid values include rsync (the default), mysqldump, xtrabackup and xtrabackup-v2.
+wsrep_sst_method         = xtrabackup-v2
+
+# Username and password of the user to use for replication.
+# Unused if wsrep_sst_method is set to rsync, while for other methods it should be in the format <user>:<password>.
+wsrep_sst_auth           = repli:<%= @repli_pass %>
+
+# Semicolon (;) separated list of wsrep options
+# pc.ignore_quorum: Whether to ignore quorum calculations, for example when a master splits from several slaves, it will remain in operation if set to true (false is default).
+# Use with care however, as in master-slave setups, slaves will not automatically reconnect to the master if set.
+# pc.ignore_sb: Whether to permit updates to be processed even in the case of split brain (when a node is disconnected from its remaining peers).
+# Safe in master-slave setups, but could lead to data inconsistency in a multi-master setup.
+wsrep_provider_options =  "pc.ignore_quorum=true;pc.ignore_sb=true;"
