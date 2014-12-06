@@ -2,21 +2,23 @@
 # Description: Show the status or seqno of Galera.
 # If the "status" option is passed, just give a short keyword indicating the
 # status of Galera on this node, then exit Possible keywords:
-# - stopped: not running
-# - duplicate: the startup script has been found to be running twice or more
-# - starting: signs of starting up
-# - started: running, member of a cluster
+# - stopped:       not running
+# - duplicate:     the initiator script has been found to be running twice or more
+# - initiating:    stopped, but initiator script is currently running
+# - starting:      signs of starting up
+# - started:       running, member of a cluster
+# - bootstrapping: in progress of bootstrapping a new cluster
 PATH=/usr/sbin:/usr/bin:/sbin:/bin
 if [[ "$1" == "status" ]]; then
-    # See if any instances of the galera-start.py script can be found. 1 means competing, 2 or more means duplicates
-    START_SCRIPT_COUNT=$(ps -ef 2>&1 | egrep 'python.+galera-start.py' | grep -vc grep)
+    # Can any instances of the galera-initiator.py script be found? 1 instance means initiating, 2 or more mean duplicates
+    START_SCRIPT_COUNT=$(ps -ef 2>&1 | egrep 'python.+galera-initiator.py' | grep -vc grep)
     # print the code and get out before performing any further checks
     if [[ $START_SCRIPT_COUNT -gt 1 ]]; then
         echo "duplicate"
         exit
     fi
 
-    # See if any instances of the galera-start.py script can be found. 1 means competing, 2 or more means duplicates
+    # Is bootstrapping currently in progress?
     NEW_CLUSTER_COUNT=$(ps -ef 2>&1 | egrep 'sh.+mysql start --wsrep-new-cluster' | grep -vc grep)
     if [[ $NEW_CLUSTER_COUNT -ge 1 ]]; then
         echo "bootstrapping"
@@ -35,14 +37,14 @@ if [[ "$1" == "status" ]]; then
     # The error message "running but PID file could not be found" could also indicate that it's still starting up.
     echo "$SERVICE_MESSAGE" | grep -q "running but PID file could not be found"
     # print the code and get out before performing any further checks.
-    if [[ $? -eq 0 ]] || [[ -f /var/lib/mysql/mysql.sock && "$SERVICE_RUNNING" == false ]]; then
+    if [[ $? -eq 0 ]]; then
         echo "starting"
         exit
     fi
 
-    # The presence of a single instance of the galera-start script in the process list is considered competing for bootstrapper
+    # Is galera-initiator in the process list?
     if [[ $START_SCRIPT_COUNT -eq 1  ]]; then
-        echo "competing"
+        echo "initiating"
         exit
     fi
 
@@ -74,5 +76,5 @@ elif [[ "$1" == "seqno" ]]; then
     fi
 
 else
-    echo "run this script either with the 'short' or the seqno' option'"
+    echo "run this script either with the 'status' or the 'seqno' option."
 fi

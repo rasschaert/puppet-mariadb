@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Galera start script.
+Galera initiator.
 
 Setting up a Galera cluster usually requires one node to be manually started
 first, with an empty wsrep_cluster_address. This is called boostrapping.
@@ -92,13 +92,21 @@ def snmp(oid, host):
 def get_status(host):
     """Look up the status of a certain host and return a string."""
     debug_print("Looking up Galera status of node %s." % (host))
-    return snmp(string_to_oid("galera-status"), host)
+    snmp_result = snmp(string_to_oid("galeraStatus"), host)
+    if snmp_result is not "None":
+        return snmp_result
+    else:
+        return "unreachable"
 
 
 def get_seqno(host):
     """Return the seqno of a certain host."""
     debug_print("Looking up database seqno of node %s." % (host))
-    return snmp(string_to_oid("galera-seqno"), host)
+    snmp_result = snmp(string_to_oid("galeraSeqno"), host)
+    if snmp_result is not "None":
+        return snmp_result
+    else:
+        return -1
 
 
 def join_cluster():
@@ -132,7 +140,7 @@ def main():
     """The main function."""
     local_node, nodes = parse_config()
     local_status = get_status(local_node)
-    if not local_status == "competing":
+    if not local_status == "initiating":
         if local_status == "stopped":
             error_print("Something is wrong with the galera-check script.")
             exit_boostrapper(1)
@@ -164,7 +172,7 @@ def main():
             elif node_status == "unreachable":
                 # If a node is unreachable, we can't ask for its seqno
                 pass
-            elif node_status == "stopped" or node_status == "competing":
+            elif node_status == "stopped" or node_status == "initiating":
                 node_seqno = get_seqno(node)
                 debug_print("seqno for %s is %s." % (node, node_seqno))
                 if node_seqno > local_seqno:
@@ -174,7 +182,7 @@ def main():
                           "is no longer eligible for bootstrapping.")
                     eligible = False
                     break
-                elif local_prio > node_prio and node_status == "competing":
+                elif local_prio > node_prio and node_status == "initiating":
                     debug_print("Prio of %s is %s, local prio is %s." %
                                 (node, str(node_prio), str(local_prio)))
                     print(

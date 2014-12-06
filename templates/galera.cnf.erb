@@ -33,13 +33,13 @@ wsrep_slave_threads      = 1
 # It is best (but not necessary) to provide a complete list of all possible cluster nodes.
 # If an empty gcomm:// is provided, this tells the node to bootstrap it self (i.e., form a new cluster).
 <% if @cluster_members -%>
-wsrep_cluster_address    = gcomm://<%= @cluster_members.sort.join ',' %>
+wsrep_cluster_address    = gcomm://<%= scope['::mariadb::cluster_members'].sort.join ',' %>
 <% else -%>
 wsrep_cluster_address    = gcomm://
 <% end -%>
 
 # Specifies the node's network address, in the format ip address[:port]. Used in situations where autoguessing is not reliable.
-wsrep_node_address       = <%= @node_address %>
+wsrep_node_address       = <%= scope['::mariadb::node_address'] %>
 
 #  The name of the cluster. Nodes cannot connect to clusters with a different name, so needs to be identical on all nodes in the same cluster.
 wsrep_cluster_name       = my_galera_cluster
@@ -49,7 +49,7 @@ wsrep_sst_method         = xtrabackup-v2
 
 # Username and password of the user to use for replication.
 # Unused if wsrep_sst_method is set to rsync, while for other methods it should be in the format <user>:<password>.
-wsrep_sst_auth           = repli:<%= @repli_pass %>
+wsrep_sst_auth           = <%= scope['::mariadb::sst_user'] -%>:<%= scope['::mariadb::sst_password'] %>
 
 # Semicolon (;) separated list of wsrep options
 # pc.ignore_quorum: Whether to ignore quorum calculations, for example when a master splits from several slaves, it will remain in operation if set to true (false is default).

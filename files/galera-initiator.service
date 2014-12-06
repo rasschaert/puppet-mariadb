@@ -1,11 +1,11 @@
 [Unit]
-Description=automatic Galera starter
+Description=Galera Initiator
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
 Restart=no
-ExecStart=/usr/local/sbin/galera-start.py
+ExecStart=/usr/local/sbin/galera-initiator.py
 StandardOutput=syslog
 StandardError=syslog
 
