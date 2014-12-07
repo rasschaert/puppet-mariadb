@@ -12,8 +12,9 @@ define mariadb::user (
   $cmd = "mysql -uroot -p${::mariadb::root_password} -e \"GRANT ${privs} ON \
           ${db}.${table} TO\'${name}'@'${host}' IDENTIFIED BY '${pass}';\""
 
-  $unless = "mysql --batch --skip-column-names -uroot -ptoor -e \"SELECT \
-             User, Host FROM mysql.user;\" | egrep -q '^sst\\s+%\$'"
+  $unless = "mysql -uroot -p${::mariadb::root_password} --batch \
+             --skip-column-names -e 'SELECT User, Host FROM mysql.user;' \
+             | egrep -q '^${name}\\s+${host}\$'"
 
   exec { "Add MariaDB user ${name}":
     command => $cmd,
