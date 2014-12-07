@@ -19,14 +19,16 @@ class mariadb::config {
     mode   => '0755',
   }
 
-  file { '/etc/my.cnf.d/galera.cnf':
-    ensure  => file,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    notify  => Service[mysql],
-    content => template('mariadb/galera.cnf.erb'),
-    require => File['/etc/my.cnf.d'],
+  if $::mariadb::galera {
+    file { '/etc/my.cnf.d/galera.cnf':
+      ensure  => file,
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0644',
+      notify  => Service[mysql],
+      content => template('mariadb/galera.cnf.erb'),
+      require => File['/etc/my.cnf.d'],
+    }
   }
 
   # The MariaDB server package installs unwanted config files in /etc/my.cnf.d

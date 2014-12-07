@@ -4,4 +4,32 @@
 !includedir /etc/my.cnf.d
 
 [mysqld]
+# The daemon should not only bind to the interface where the application or 
+# client connects, but also to where XtraBackup connects.
 bind-address              = 0.0.0.0
+
+# This option needs to be explicitly present in the config in order for
+# XtraBackup to work
+datadir = /var/lib/mysql
+
+# In order for Galera to work correctly binlog format should be ROW,
+# which helps Galera do certification of transactions.
+# This allows multi-node writing in Galera and detection of conflicts between
+# transactions based on row ids.
+binlog_format             = ROW
+
+# Locking mode used for generating auto-increment values. 0 is the traditional
+# lock mode, 1 the consecutive, and 2 the interleaved. In order to use Galera,
+# the mode needs to be set to 2.
+innodb_autoinc_lock_mode  = 2
+
+# The InnoDB double write buffer should not be disabled for Galera when using
+# v2.0 and higher. InnoDB pages might get corrupted during a MySQL crash, but
+# will be fixed by blocks from the double write buffer during auto-recovery.
+innodb_doublewrite        = 1
+
+# The query cache needs to be disabled for MariaDB Galera cluster.
+query_cache_size          = 0
+
+# Disabling symbolic-links is recommended to prevent assorted security risks.
+symbolic-links            = 0
