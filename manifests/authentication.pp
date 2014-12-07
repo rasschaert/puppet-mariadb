@@ -12,7 +12,8 @@ class mariadb::authentication {
   if $::mariadb::galera {
     mariadb::user { $::mariadb::sst_user:
       pass  => $::mariadb::sst_password,
-      # privs => 'REPLICATION CLIENT, CREATE TABLESPACE, SUPER',
+      host  => 'localhost',
+      privs => 'RELOAD, LOCK TABLES, REPLICATION CLIENT',
     }
   }
 
