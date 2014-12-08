@@ -23,6 +23,12 @@ class mariadb::install {
     require => Yumrepo['MariaDB-10.0'],
   }
 
+  # Contains libmysqlclient.so.18, needed by XtraBackup
+  package { 'MariaDB-shared':
+    ensure  => installed,
+    require => Yumrepo['MariaDB-10.0'],
+  }
+
   #############################################################################
   #                                SHAVING YAK                                #
   #############################################################################
@@ -30,13 +36,14 @@ class mariadb::install {
   # already installed, yum will refuse to install the MariaDB 10.0 packages.
   # The Puppetlabs CentOS 7 Vagrant box comes with mariadb-libs-5.5 installed.
   if ($::osfamily == 'RedHat' and $::operatingsystemmajrelease == 7) {
-    # Thankfully the counterpart package for MariaDB 10 has a different name
-    # or it would have been a lot harder to remove this package idempotently
+    # Thankfully the counterpart package for MariaDB 10 has a different name.
+    # Otherwise it would have been a lot harder to remove this package in an
+    # idempotent way.
     package { 'mariadb-libs':
       ensure            => absent,
-      # The yum provider can complain that these libs might be needed by other
-      # packages like postfix. Yum makes a good point, but we're putting those
-      # libs back later on when the newer MariaDB is installed
+      # The yum provider might complain that these libs might be needed by
+      # other packages like postfix. Yum makes a good point, but we're putting
+      # those libs back later on when the newer MariaDB is installed.
       provider          => rpm,
       uninstall_options => '--nodeps',
       before            => [
@@ -50,8 +57,6 @@ class mariadb::install {
                     'set updates/exclude mariadb-*'
                   ],
     }
-    Augeas['exlude mariadb 5.5 from yum'] -> Package <| |>
-
   }
   #############################################################################
   #                                YAK SHAVED                                 #

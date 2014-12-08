@@ -10,10 +10,10 @@ class mariadb (
   $node_address    = '127.0.0.1',
 ) {
 
-  include mariadb::install
-  include mariadb::config
-  include mariadb::service
-  include mariadb::authentication
+  contain mariadb::install
+  contain mariadb::config
+  contain mariadb::service
+  contain mariadb::authentication
 
   Class['mariadb::install'] ->
   Class['mariadb::config']  ->
@@ -21,7 +21,7 @@ class mariadb (
   Class['mariadb::authentication']
 
   if galera {
-    include mariadb::galera_initiator
+    contain mariadb::galera_initiator
     Class['mariadb::galera_initiator'] ->
     Class['mariadb::authentication']
   }
