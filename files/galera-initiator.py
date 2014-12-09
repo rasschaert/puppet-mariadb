@@ -163,7 +163,7 @@ def main():
             node_status = get_status(node)
             debug_print("Status on node %s is %s." %
                         (node, node_status))
-            if node_status == "started" or node_status == "starting":
+            if node_status == "running" or node_status == "starting":
                 exit_boostrapper(join_cluster())
             elif node_status == "bootstrapping":
                 print("Waiting for %s to finish bootstrapping." % (node))

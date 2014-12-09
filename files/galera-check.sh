@@ -6,7 +6,7 @@
 # - duplicate:     the initiator script has been found to be running twice or more
 # - initiating:    stopped, but initiator script is currently running
 # - starting:      signs of starting up
-# - started:       running, member of a cluster
+# - running:       running, member of a cluster
 # - bootstrapping: in progress of bootstrapping a new cluster
 PATH=/usr/sbin:/usr/bin:/sbin:/bin
 if [[ "$1" == "status" ]]; then
@@ -29,7 +29,7 @@ if [[ "$1" == "status" ]]; then
     SERVICE_MESSAGE=$(timeout 1s /etc/init.d/mysql status 2>&1) && SERVICE_RUNNING=true || SERVICE_RUNNING=false
     # print the code and get out before performing any further checks
     if [[ "$SERVICE_RUNNING" == true ]]; then
-        echo "started"
+        echo "running"
         exit
     fi
 
