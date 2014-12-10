@@ -2,8 +2,11 @@
 #
 #
 class mariadb::galera_initiator {
-
-  ensure_packages(['python-pip','git'])
+  if !defined(Package['git']) {
+    package { 'git':
+      ensure => installed,
+    }
+  }
 
   snmp::server::extend { 'galeraStatus':
     command => '/usr/bin/galera_status',
@@ -17,8 +20,10 @@ class mariadb::galera_initiator {
     ensure  => latest,
     url     => 'git+https://github.com/rasschaert/galera_initiator.git',
     require => [
+                  Package['git'],
                   Snmp::Server::Extend['galeraStatus'],
                   Snmp::Server::Extend['galeraSeqno'],
+                  Class['python'],
                   Class['snmp::client'],
                   Class['snmp::server'],
                 ],
