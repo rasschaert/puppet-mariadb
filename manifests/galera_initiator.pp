@@ -2,8 +2,14 @@
 #
 #
 class mariadb::galera_initiator {
+  # Dependencies that might have been installed elsewhere
   if !defined(Package['git']) {
     package { 'git':
+      ensure => installed,
+    }
+  }
+  if !defined(Package['python-psutil']) {
+    package { 'python-psutil':
       ensure => installed,
     }
   }
@@ -21,9 +27,9 @@ class mariadb::galera_initiator {
     url     => 'git+https://github.com/rasschaert/galera_initiator.git',
     require => [
                   Package['git'],
+                  Package['python-psutil'],
                   Snmp::Server::Extend['galeraStatus'],
                   Snmp::Server::Extend['galeraSeqno'],
-                  Class['python'],
                   Class['snmp::client'],
                   Class['snmp::server'],
                 ],
