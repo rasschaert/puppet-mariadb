@@ -5,7 +5,7 @@ Description=Galera Initiator
 Type=oneshot
 RemainAfterExit=yes
 Restart=no
-ExecStart=/usr/local/sbin/galera-initiator.py
+ExecStart=/usr/bin/galera_init
 StandardOutput=syslog
 StandardError=syslog
 

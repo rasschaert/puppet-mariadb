@@ -2,47 +2,40 @@
 #
 #
 class mariadb::galera_initiator {
-  file { '/usr/local/sbin/galera-check.sh':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0755',
-    source => 'puppet:///modules/mariadb/galera-check.sh',
-  }
+
+  ensure_packages(['python-pip','git'])
 
   snmp::server::extend { 'galeraStatus':
-    command => '/usr/local/sbin/galera-check.sh status',
+    command => '/usr/bin/galera_status',
   }
 
   snmp::server::extend { 'galeraSeqno':
-    command => '/usr/local/sbin/galera-check.sh seqno',
+    command => '/usr/bin/galera_seqno',
   }
 
-  file { '/usr/local/sbin/galera-initiator.py':
-    ensure  => file,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0755',
-    source  => 'puppet:///modules/mariadb/galera-initiator.py',
-    require =>  [
+  python::pip { 'GaleraInitiator' :
+    ensure  => latest,
+    url     => 'git+https://github.com/rasschaert/galera_initiator.git',
+    require => [
                   Snmp::Server::Extend['galeraStatus'],
+                  Snmp::Server::Extend['galeraSeqno'],
                   Class['snmp::client'],
                   Class['snmp::server'],
                 ],
   }
 
-  file { '/etc/systemd/system/galera-initiator.service':
+  file { '/etc/systemd/system/galera-init.service':
     ensure  => file,
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    source  => 'puppet:///modules/mariadb/galera-initiator.service',
-    require => File['/usr/local/sbin/galera-initiator.py'],
+    source  => 'puppet:///modules/mariadb/galera-init.service',
+    require => Python::Pip['GaleraInitiator'],
   }
 
-  service { 'galera-initiator':
+  service { 'galera-init':
     ensure  => running,
     enable  => true,
-    require => File['/etc/systemd/system/galera-initiator.service'],
+    require => File['/etc/systemd/system/galera-init.service'],
   }
 }
