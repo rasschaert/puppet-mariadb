@@ -9,8 +9,13 @@ class mariadb::galera_initiator {
     }
   }
   if !defined(Package['python-psutil']) {
+    $psutil_dependency = $::osfamily ? {
+      'RedHat' => Class['epel'],
+      default  => [],
+    }
     package { 'python-psutil':
-      ensure => installed,
+      ensure  => installed,
+      require => $psutil_dependency,
     }
   }
 
