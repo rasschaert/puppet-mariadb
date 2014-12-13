@@ -32,6 +32,10 @@ class mariadb::install {
   package { 'MariaDB-shared':
     ensure  => installed,
   }
+  # Needed to perform SST
+  package { 'socat':
+    ensure => installed,
+  }
 
   if defined(Yumrepo['MariaDB-10.0']) {
     Yumrepo['MariaDB-10.0'] -> Package[$server_package]
