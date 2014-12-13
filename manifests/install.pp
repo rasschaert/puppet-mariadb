@@ -2,14 +2,20 @@
 #
 #
 class mariadb::install {
-  yumrepo { 'MariaDB-10.0':
-    # MariaDB issue MDEV-7235
-    # baseurl  => 'http://yum.mariadb.org/10.0/centos7-amd64',
-    baseurl  => 'http://yum.mariadb.org/10.0/centos6-amd64',
-    descr    => 'MariaDB repository',
-    enabled  => '1',
-    gpgcheck => '1',
-    gpgkey   => 'https://yum.mariadb.org/RPM-GPG-KEY-MariaDB',
+  if $::osfamily == 'RedHat' {
+    $osname = downcase($::operatingsystem)
+    $maj = $::operatingsystemmajrelease
+    $basearch = $::architecture ? {
+      'x86_64' => 'amd64',
+      'i386'   => 'x86',
+    }
+    yumrepo { 'MariaDB-10.0':
+      baseurl  => "http://yum.mariadb.org/10.0/${osname}${maj}-${basearch}",
+      descr    => 'MariaDB repository',
+      enabled  => '1',
+      gpgcheck => '1',
+      gpgkey   => 'https://yum.mariadb.org/RPM-GPG-KEY-MariaDB',
+    }
   }
 
   # From MariaDB 10.1.1 on, we can use MariaDB-server package in both cases
@@ -20,13 +26,16 @@ class mariadb::install {
   }
   package { $server_package:
     ensure  => installed,
-    require => Yumrepo['MariaDB-10.0'],
   }
 
   # Contains libmysqlclient.so.18, needed by XtraBackup
   package { 'MariaDB-shared':
     ensure  => installed,
-    require => Yumrepo['MariaDB-10.0'],
+  }
+
+  if defined(Yumrepo['MariaDB-10.0']) {
+    Yumrepo['MariaDB-10.0'] -> Package[$server_package]
+    Yumrepo['MariaDB-10.0'] -> Package['MariaDB-shared']
   }
 
   #############################################################################
