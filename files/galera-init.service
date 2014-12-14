@@ -1,5 +1,6 @@
 [Unit]
 Description=Galera Initiator
+After=snmpd.service
 
 [Service]
 Type=oneshot
