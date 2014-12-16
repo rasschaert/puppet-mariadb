@@ -40,18 +40,33 @@ class mariadb::galera_initiator {
                 ],
   }
 
-  file { '/etc/systemd/system/galera-init.service':
-    ensure  => file,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    source  => 'puppet:///modules/mariadb/galera-init.service',
-    require => Python::Pip['GaleraInitiator'],
+  if $::osfamily == 'RedHat' {
+    if $::operatingsystemmajrelease == 7 {
+      file { '/etc/systemd/system/galera-init.service':
+        ensure  => file,
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0644',
+        source  => 'puppet:///modules/mariadb/galera-init.service',
+        require => Python::Pip['GaleraInitiator'],
+        before  => Service['galera-init'],
+      }
+    }
+    if $::operatingsystemmajrelease == 6 {
+      file { '/etc/init.d/galera-init':
+        ensure  => file,
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0755',
+        source  => 'puppet:///modules/mariadb/galera-init.sysvinit',
+        require => Python::Pip['GaleraInitiator'],
+        before  => Service['galera-init'],
+      }
+    }
   }
 
   service { 'galera-init':
-    ensure  => running,
-    enable  => true,
-    require => File['/etc/systemd/system/galera-init.service'],
+    ensure => running,
+    enable => true,
   }
 }

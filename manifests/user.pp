@@ -19,7 +19,7 @@ define mariadb::user (
   exec { "Add MariaDB user ${name}":
     command => $cmd,
     unless  => $unless,
-    path    => '/bin',
+    path    => '/bin:/usr/bin',
     require => Exec['Set MariaDB root password'],
     notify  => Exec['flush privileges'],
   }

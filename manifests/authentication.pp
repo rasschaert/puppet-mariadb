@@ -20,7 +20,7 @@ class mariadb::authentication {
   exec { 'flush privileges':
     command     => "mysql -uroot -p${::mariadb::root_password} -e \
                     'FLUSH PRIVILEGES;'",
-    path        => '/bin',
+    path        => '/bin:/usr/bin',
     refreshonly => true,
   }
 }

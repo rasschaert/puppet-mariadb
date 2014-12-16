@@ -1,0 +1,31 @@
+#!/bin/sh
+#
+# galera_init Galera Initiator
+#
+# chkconfig:   345 90 10
+# description: Galera Initiator
+ 
+ 
+case "$1" in
+    start)
+        galera_init
+        exit $?
+        ;;
+    stop)
+        /etc/init.d/mysql stop
+        exit $?
+        ;;
+    restart)
+        /etc/init.d/mysql stop || exit $?
+        galera_init
+        exit $?
+        ;;
+    status)
+        /etc/init.d/mysql status
+        exit $?
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|status|restart}"
+        exit 2
+        ;;
+esac
