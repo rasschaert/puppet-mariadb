@@ -9,8 +9,8 @@ class mariadb::install {
       'x86_64' => 'amd64',
       'i386'   => 'x86',
     }
-    yumrepo { 'MariaDB-10.0':
-      baseurl  => "http://yum.mariadb.org/10.0/${osname}${maj}-${basearch}",
+    yumrepo { "MariaDB":
+      baseurl  => "http://yum.mariadb.org/${::mariadb::version}/${osname}${maj}-${basearch}",
       descr    => 'MariaDB repository',
       enabled  => '1',
       gpgcheck => '1',
@@ -37,9 +37,9 @@ class mariadb::install {
     ensure => installed,
   }
 
-  if defined(Yumrepo['MariaDB-10.0']) {
-    Yumrepo['MariaDB-10.0'] -> Package[$server_package]
-    Yumrepo['MariaDB-10.0'] -> Package['MariaDB-shared']
+  if defined(Yumrepo['MariaDB']) {
+    Yumrepo['MariaDB'] -> Package[$server_package]
+    Yumrepo['MariaDB'] -> Package['MariaDB-shared']
   }
 
   #############################################################################
