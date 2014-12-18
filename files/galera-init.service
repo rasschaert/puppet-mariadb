@@ -3,10 +3,10 @@ Description=Galera Initiator
 After=snmpd.service
 
 [Service]
-Type=oneshot
-RemainAfterExit=yes
-Restart=no
+Type=forking
+Restart=always
 ExecStart=/usr/bin/galera_init
+ExecStop=/etc/init.d/mysql stop
 StandardOutput=syslog
 StandardError=syslog
 
