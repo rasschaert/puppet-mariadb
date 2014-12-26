@@ -20,11 +20,13 @@ class mariadb::galera_initiator {
   }
 
   snmp::server::extend { 'galeraStatus':
-    command => '/usr/bin/galera_status',
+    command        => '/usr/bin/galera_status',
+    cache_duration => 0,
   }
 
   snmp::server::extend { 'galeraSeqno':
-    command => '/usr/bin/galera_seqno',
+    command        => '/usr/bin/galera_seqno',
+    cache_duration => 60,
   }
 
   python::pip { 'GaleraInitiator' :
